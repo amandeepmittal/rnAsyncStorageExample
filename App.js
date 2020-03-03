@@ -1,114 +1,128 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
-
-import React from 'react';
+import React, { useState, useEffect } from 'react'
 import {
-  SafeAreaView,
   StyleSheet,
-  ScrollView,
   View,
   Text,
-  StatusBar,
-} from 'react-native';
+  TextInput,
+  TouchableOpacity
+} from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage'
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const STORAGE_KEY = '@save_age'
 
-const App: () => React$Node = () => {
+const App = () => {
+  const [age, setAge] = useState('')
+
+  useEffect(() => {
+    readData()
+  }, [])
+
+  // read data
+  const readData = async () => {
+    try {
+      const age = await AsyncStorage.getItem(STORAGE_KEY)
+
+      if (age !== null) {
+        setAge(age)
+      }
+    } catch (e) {
+      alert('Failed to fetch the data from storage')
+    }
+  }
+
+  // save data
+
+  const saveData = async () => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, age)
+      setAge(age)
+      alert('Data successfully saved')
+    } catch (e) {
+      alert('Failed to save the data to the storage')
+    }
+  }
+
+  const clearStorage = async () => {
+    try {
+      await AsyncStorage.clear()
+      alert('Storage successfully cleared!')
+    } catch (e) {
+      alert('Failed to clear the async storage.')
+    }
+  }
+
+  const onChangeText = age => setAge(age)
+
+  const onSubmitEditing = () => {
+    if (!age) return
+    saveData(age)
+    setAge('')
+  }
+
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
-  );
-};
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Android App</Text>
+      </View>
+      <View style={styles.panel}>
+        <Text>Enter your age here:</Text>
+        <TextInput
+          style={styles.input}
+          value={age}
+          placeholder="Age is just a number"
+          onChangeText={onChangeText}
+          onSubmitEditing={onSubmitEditing}
+        />
+        <Text style={styles.text}>Your age is {age}</Text>
+        <TouchableOpacity onPress={clearStorage} style={styles.button}>
+          <Text style={styles.buttonText}>Clear Storage</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+}
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  container: {
+    flex: 1
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  header: {
+    width: '100%',
+    backgroundColor: '#dcdcdc',
+    padding: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center'
   },
-  body: {
-    backgroundColor: Colors.white,
+  title: {
+    fontSize: 22,
+    color: '#333',
+    fontWeight: 'bold'
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  panel: {
+    paddingTop: 40,
+    alignItems: 'center'
   },
-  sectionTitle: {
+  text: {
     fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
+    padding: 10,
+    backgroundColor: '#dcdcdc'
   },
-  sectionDescription: {
-    marginTop: 8,
+  input: {
+    padding: 15,
+    height: 50,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+    margin: 10
+  },
+  button: {
+    margin: 10,
+    padding: 10,
+    backgroundColor: 'yellow'
+  },
+  buttonText: {
     fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
-});
+    color: '#444'
+  }
+})
 
-export default App;
+export default App
